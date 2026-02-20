@@ -1,0 +1,42 @@
+pipeline {
+    agent any
+
+    stages {
+        stage('Checkout') {
+            steps {
+                echo 'Checkingout the code'
+                git url: "https://github.com/JoinDevops0425/django-notes-app.git", branch: "main"
+            }
+        }
+        stage('build') {
+            steps {
+                echo 'building it'
+                sh """ 
+                whoami
+                docker build -t notesapp:latest . 
+                """
+            }
+        }
+        stage('Push') {
+            steps {
+                withCredentials([usernamePassword('credentialsId': "dockerhub_cred", 
+                passwordVariable: "dockerHubPass", 
+                usernameVariable: "dockerHubUser")]){
+                sh """
+                docker login -u ${env.dockerHubUser} -p ${env.dockerHubPass}
+                docker image tag notesapp:latest joindevops0425/notes-app:latest
+                docker push ${env.dockerHubUser}/notes-app:latest
+                """
+                }
+            }
+        }
+        stage('deploy') {
+            steps {
+                echo 'Hello World'
+            }
+        }
+    }
+}
+
+
+dckr_pat_6mW7V4McN7XgF7PLLYZ3Ga2587g
